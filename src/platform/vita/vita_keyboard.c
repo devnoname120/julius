@@ -69,7 +69,7 @@ static void utf8_to_utf16(uint8_t *src, uint16_t *dst)
 static int init_ime_dialog(char *title, const char *initial_text, int max_text_length, int type, int option)
 {
     if (ime_dialog_running)
-    return -1;
+        return -1;
 
     // Convert UTF8 to UTF16
     memset(ime_title_utf16, 0, sizeof(ime_title_utf16));
@@ -111,7 +111,7 @@ static uint8_t *get_ime_dialog_input_text_utf8(void)
 
 static int update_ime_dialog(void) {
     if (!ime_dialog_running)
-    return IME_DIALOG_RESULT_NONE;
+        return IME_DIALOG_RESULT_NONE;
 
     SceCommonDialogStatus status = sceImeDialogGetStatus();
     if (status == IME_DIALOG_RESULT_FINISHED) {
@@ -145,12 +145,12 @@ char *vita_keyboard_get(char *title, const char *initial_text, int maxLen, int m
         ime_init_apputils = 1;
     }
     if (multiline)
-    init_ime_dialog(title, initial_text, maxLen, SCE_IME_TYPE_BASIC_LATIN, SCE_IME_OPTION_MULTILINE);
+        init_ime_dialog(title, initial_text, maxLen, SCE_IME_TYPE_BASIC_LATIN, SCE_IME_OPTION_MULTILINE);
     else
-    init_ime_dialog(title, initial_text, maxLen, SCE_IME_TYPE_BASIC_LATIN, 0);
+        init_ime_dialog(title, initial_text, maxLen, SCE_IME_TYPE_BASIC_LATIN, 0);
 
-    bool done;
-    do {
+    bool done = false;
+    while (!done) {
         vita2d_start_drawing();
         vita2d_clear_screen();
 
@@ -167,7 +167,6 @@ char *vita_keyboard_get(char *title, const char *initial_text, int maxLen, int m
         vita2d_common_dialog_update();
         vita2d_swap_buffers();
         sceDisplayWaitVblankStart();
-    } while (!done);
-
+    }
     return name;
 }
