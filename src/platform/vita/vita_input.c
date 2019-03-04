@@ -31,7 +31,7 @@ static int hires_dx = 0; // sub-pixel-precision counters to allow slow pointer m
 static int hires_dy = 0;
 static int vkbd_requested = 0;
 static int pressed_buttons[VITA_NUM_BUTTONS] = { 0 };
-static SDL_Keycode map_vita_button_to_sdlk[VITA_NUM_BUTTONS] = 
+static SDL_Keycode map_vita_button_to_sdlkey[VITA_NUM_BUTTONS] =
 { 
     SDLK_PAGEUP,    // VITA_PAD_TRIANGLE
     NO_MAPPING,     // VITA_PAD_CIRCLE
@@ -47,9 +47,27 @@ static SDL_Keycode map_vita_button_to_sdlk[VITA_NUM_BUTTONS] =
     NO_MAPPING      // VITA_START
 };
 
+static uint8_t map_vita_button_to_sdlmousebutton[VITA_NUM_BUTTONS] =
+{
+    NO_MAPPING,          // VITA_PAD_TRIANGLE
+    SDL_BUTTON_RIGHT,    // VITA_PAD_CIRCLE
+    SDL_BUTTON_LEFT,     // VITA_PAD_CROSS
+    NO_MAPPING,          // VITA_PAD_SQUARE
+    SDL_BUTTON_RIGHT,    // VITA_PAD_L
+    SDL_BUTTON_LEFT,     // VITA_PAD_R
+    NO_MAPPING,          // VITA_PAD_DOWN
+    NO_MAPPING,          // VITA_PAD_LEFT
+    NO_MAPPING,          // VITA_PAD_UP
+    NO_MAPPING,          // VITA_PAD_RIGHT
+    NO_MAPPING,          // VITA_SELECT
+    NO_MAPPING           // VITA_START
+};
+
 static void vita_start_text_input(char *initial_text, int multiline);
 static void vita_rescale_analog(int *x, int *y, int dead);
 static void vita_button_to_sdlkey_event(int vita_button, SDL_Event *event, uint32_t event_type); 
+static void vita_button_to_sdlmouse_event(int vita_button, SDL_Event *event, uint32_t event_type);
+
 static void vita_create_and_push_sdlkey_event(uint32_t event_type, SDL_Keycode key);
 
 int vita_poll_event(SDL_Event *event)
@@ -64,70 +82,52 @@ int vita_poll_event(SDL_Event *event)
                 last_mouse_y = event->motion.y;
                 break;
             case SDL_JOYBUTTONDOWN:
-                if (event->jbutton.which==0) { // Only Joystick 0 controls the game
-                    switch (event->jbutton.button) {
-                        case VITA_PAD_SQUARE:
-                        case VITA_PAD_TRIANGLE:
-                        case VITA_PAD_UP:
-                        case VITA_PAD_DOWN:
-                        case VITA_PAD_LEFT:
-                        case VITA_PAD_RIGHT: // intentional fallthrough
-                            vita_button_to_sdlkey_event(event->jbutton.button, event, SDL_KEYDOWN);
-                            break;
-                        case VITA_PAD_CROSS:
-                        case VITA_PAD_R: // intentional fallthrough
-                            event->type = SDL_MOUSEBUTTONDOWN;
-                            event->button.button = SDL_BUTTON_LEFT;
-                            event->button.state = SDL_PRESSED;
-                            event->button.x = last_mouse_x;
-                            event->button.y = last_mouse_y;
-                            break;
-                        case VITA_PAD_CIRCLE:
-                        case VITA_PAD_L: // intentional fallthrough
-                            event->type = SDL_MOUSEBUTTONDOWN;
-                            event->button.button = SDL_BUTTON_RIGHT;
-                            event->button.state = SDL_PRESSED;
-                            event->button.x = last_mouse_x;
-                            event->button.y = last_mouse_y;
-                            break;
-                        case VITA_PAD_START:
-                            vkbd_requested = 1;
-                            break;
-                        default:
-                            break;
-                    }
+                if (event->jbutton.which != 0) { // Only Joystick 0 controls the game
+                    break;
+                }
+                switch (event->jbutton.button) {
+                    case VITA_PAD_SQUARE:
+                    case VITA_PAD_TRIANGLE:
+                    case VITA_PAD_UP:
+                    case VITA_PAD_DOWN:
+                    case VITA_PAD_LEFT:
+                    case VITA_PAD_RIGHT: // intentional fallthrough
+                        vita_button_to_sdlkey_event(event->jbutton.button, event, SDL_KEYDOWN);
+                        break;
+                    case VITA_PAD_CROSS:
+                    case VITA_PAD_R:
+                    case VITA_PAD_CIRCLE:
+                    case VITA_PAD_L: // intentional fallthrough
+                        vita_button_to_sdlmouse_event(event->jbutton.button, event, SDL_MOUSEBUTTONDOWN);
+                        break;
+                    case VITA_PAD_START:
+                        vkbd_requested = 1;
+                        break;
+                    default:
+                        break;
                 }
                 break;
             case SDL_JOYBUTTONUP:
-                if (event->jbutton.which==0) {// Only Joystick 0 controls the game
-                    switch (event->jbutton.button) {
-                        case VITA_PAD_SQUARE:
-                        case VITA_PAD_TRIANGLE:
-                        case VITA_PAD_UP:
-                        case VITA_PAD_DOWN:
-                        case VITA_PAD_LEFT:
-                        case VITA_PAD_RIGHT: // intentional fallthrough
-                            vita_button_to_sdlkey_event(event->jbutton.button, event, SDL_KEYUP);
-                            break;
-                        case VITA_PAD_CROSS:
-                        case VITA_PAD_R: // intentional fallthrough
-                            event->type = SDL_MOUSEBUTTONUP;
-                            event->button.button = SDL_BUTTON_LEFT;
-                            event->button.state = SDL_RELEASED;
-                            event->button.x = last_mouse_x;
-                            event->button.y = last_mouse_y;
-                            break;
-                        case VITA_PAD_CIRCLE:
-                        case VITA_PAD_L: // intentional fallthrough
-                            event->type = SDL_MOUSEBUTTONUP;
-                            event->button.button = SDL_BUTTON_RIGHT;
-                            event->button.state = SDL_RELEASED;
-                            event->button.x = last_mouse_x;
-                            event->button.y = last_mouse_y;
-                            break;
-                        default:
-                            break;
-                    }
+                if (event->jbutton.which != 0) { // Only Joystick 0 controls the game
+                    break;
+                }
+                switch (event->jbutton.button) {
+                    case VITA_PAD_SQUARE:
+                    case VITA_PAD_TRIANGLE:
+                    case VITA_PAD_UP:
+                    case VITA_PAD_DOWN:
+                    case VITA_PAD_LEFT:
+                    case VITA_PAD_RIGHT: // intentional fallthrough
+                        vita_button_to_sdlkey_event(event->jbutton.button, event, SDL_KEYUP);
+                        break;
+                    case VITA_PAD_CROSS:
+                    case VITA_PAD_R:
+                    case VITA_PAD_CIRCLE:
+                    case VITA_PAD_L: // intentional fallthrough
+                        vita_button_to_sdlmouse_event(event->jbutton.button, event, SDL_MOUSEBUTTONUP);
+                        break;
+                    default:
+                        break;
                 }
             default:
                 break;
@@ -267,24 +267,25 @@ void vita_handle_virtual_keyboard(void)
 void vita_start_text_input(char *initial_text, int multiline)
 {
     char *text = vita_keyboard_get("Enter New Text:", initial_text, 600, multiline);
-    if (text != NULL)  {
-        for (int i = 0; i < 600; i++) {
-            vita_create_and_push_sdlkey_event(SDL_KEYDOWN, SDLK_BACKSPACE);
-            vita_create_and_push_sdlkey_event(SDL_KEYUP, SDLK_BACKSPACE);
-        }
-        for (int i = 0; i < 600; i++) {
-            vita_create_and_push_sdlkey_event(SDL_KEYDOWN, SDLK_DELETE);
-            vita_create_and_push_sdlkey_event(SDL_KEYUP, SDLK_DELETE);
-        }
-        for (int i=0; i < 599; i++) {
-            if (text[i] == 0)
-                break;
-            SDL_Event textinput_event;
-            textinput_event.type = SDL_TEXTINPUT;
-            textinput_event.text.text[0] = text[i];
-            textinput_event.text.text[1] = 0;
-            SDL_PushEvent(&textinput_event);
-        }
+    if (text == NULL)  {
+        return;
+    }
+    for (int i = 0; i < 600; i++) {
+        vita_create_and_push_sdlkey_event(SDL_KEYDOWN, SDLK_BACKSPACE);
+        vita_create_and_push_sdlkey_event(SDL_KEYUP, SDLK_BACKSPACE);
+    }
+    for (int i = 0; i < 600; i++) {
+        vita_create_and_push_sdlkey_event(SDL_KEYDOWN, SDLK_DELETE);
+        vita_create_and_push_sdlkey_event(SDL_KEYUP, SDLK_DELETE);
+    }
+    for (int i=0; i < 599; i++) {
+        if (text[i] == 0)
+            break;
+        SDL_Event textinput_event;
+        textinput_event.type = SDL_TEXTINPUT;
+        textinput_event.text.text[0] = text[i];
+        textinput_event.text.text[1] = 0;
+        SDL_PushEvent(&textinput_event);
     }
 }
 
@@ -355,7 +356,7 @@ void vita_rescale_analog(int *x, int *y, int dead)
 void vita_button_to_sdlkey_event(int vita_button, SDL_Event *event, uint32_t event_type) 
 {
     event->type = event_type;
-    event->key.keysym.sym = map_vita_button_to_sdlk[vita_button];
+    event->key.keysym.sym = map_vita_button_to_sdlkey[vita_button];
     event->key.keysym.mod = 0;
     event->key.repeat = 0;
 
@@ -363,6 +364,22 @@ void vita_button_to_sdlkey_event(int vita_button, SDL_Event *event, uint32_t eve
         pressed_buttons[vita_button] = 1;
     if (event_type == SDL_KEYUP)
         pressed_buttons[vita_button] = 0;
+}
+
+void vita_button_to_sdlmouse_event(int vita_button, SDL_Event *event, uint32_t event_type)
+{
+    event->type = event_type;
+    event->button.button = map_vita_button_to_sdlmousebutton[vita_button];
+    if (event_type == SDL_MOUSEBUTTONDOWN) {
+        event->button.state = SDL_PRESSED;
+        pressed_buttons[vita_button] = 1;
+    }
+    if (event_type == SDL_MOUSEBUTTONUP) {
+        event->button.state = SDL_RELEASED;
+        pressed_buttons[vita_button] = 0;
+    }
+    event->button.x = last_mouse_x;
+    event->button.y = last_mouse_y;
 }
 
 void vita_create_and_push_sdlkey_event(uint32_t event_type, SDL_Keycode key) 

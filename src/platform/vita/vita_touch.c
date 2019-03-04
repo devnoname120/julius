@@ -1,11 +1,8 @@
-#include <psp2/kernel/processmgr.h>
 #include "vita.h"
+#include "vita_touch.h"
+#include <math.h>
 
 #define NO_TOUCH -1 // finger id setting if finger is not touching the screen
-
-#include "vita_touch.h"
-
-#include "math.h"
 
 static void init_touch(void);
 static void preprocess_events(SDL_Event *event);
@@ -74,11 +71,6 @@ void vita_handle_touch(SDL_Event *event)
 
 static void preprocess_events(SDL_Event *event)
 {
-#ifdef __vita__
-    // prevent suspend
-    sceKernelPowerTick(SCE_KERNEL_POWER_TICK_DISABLE_AUTO_SUSPEND);
-    sceKernelPowerTick(SCE_KERNEL_POWER_TICK_DISABLE_OLED_OFF);
-#endif
     // Supported touch gestures:
     // left mouse click: single finger short tap
     // right mouse click: second finger short tap while first finger is still down
