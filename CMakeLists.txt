@@ -14,7 +14,7 @@ set(SHORT_NAME julius)
 project(${SHORT_NAME} C)
 
 if (VITA_BUILD)
-    include("$ENV{VITASDK}/share/vita.cmake" REQUIRED)
+    include("${VITASDK}/share/vita.cmake" REQUIRED)
     set(VITA_TITLEID  "JULIUS001")
     set(VITA_VERSION "00.10")
 endif()
