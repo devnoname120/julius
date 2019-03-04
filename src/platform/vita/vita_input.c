@@ -24,6 +24,7 @@ enum {
 
 int last_mouse_x = 0;
 int last_mouse_y = 0;
+int direct_touch_mode = 0; // 0: drag the pointer and click like on a touchpad (default), 1: pointer jumps to finger
 
 static SDL_Joystick *joy = NULL;
 
@@ -103,6 +104,9 @@ int vita_poll_event(SDL_Event *event)
                     case VITA_PAD_START:
                         vkbd_requested = 1;
                         break;
+                    case VITA_PAD_SELECT:
+                        direct_touch_mode = !direct_touch_mode;
+                        break;
                     default:
                         break;
                 }
@@ -139,15 +143,16 @@ int vita_poll_event(SDL_Event *event)
 
 void vita_handle_repeat_keys(void)
 {
-    if (pressed_buttons[VITA_PAD_UP])
+    if (pressed_buttons[VITA_PAD_UP]) {
         vita_create_and_push_sdlkey_event(SDL_KEYDOWN, SDLK_UP);
-    else if (pressed_buttons[VITA_PAD_DOWN])
+    } else if (pressed_buttons[VITA_PAD_DOWN]) {
         vita_create_and_push_sdlkey_event(SDL_KEYDOWN, SDLK_DOWN);
-
-    if (pressed_buttons[VITA_PAD_LEFT])
+    }
+    if (pressed_buttons[VITA_PAD_LEFT]) {
         vita_create_and_push_sdlkey_event(SDL_KEYDOWN, SDLK_LEFT);
-    else if (pressed_buttons[VITA_PAD_RIGHT])
+    } else if (pressed_buttons[VITA_PAD_RIGHT]) {
         vita_create_and_push_sdlkey_event(SDL_KEYDOWN, SDLK_RIGHT);
+    }
 }
 
 void vita_handle_analog_sticks(void)
@@ -204,8 +209,9 @@ void vita_handle_analog_sticks(void)
     float right_joy_dead_zone_squared = 10240.0*10240.0;
     float slope = 0.414214f; // tangent of 22.5 degrees for size of angular zones
 
-    if ((right_x * right_x + right_y * right_y) <= right_joy_dead_zone_squared)
+    if ((right_x * right_x + right_y * right_y) <= right_joy_dead_zone_squared) {
         return;
+    }
 
     int up = 0;
     int down = 0;
@@ -245,15 +251,16 @@ void vita_handle_analog_sticks(void)
             left = 1;
     }
 
-    if (!pressed_buttons[VITA_PAD_UP] && up)
+    if (!pressed_buttons[VITA_PAD_UP] && up) {
         vita_create_and_push_sdlkey_event(SDL_KEYDOWN, SDLK_UP);
-    else if (!pressed_buttons[VITA_PAD_DOWN] && down)
+    } else if (!pressed_buttons[VITA_PAD_DOWN] && down) {
         vita_create_and_push_sdlkey_event(SDL_KEYDOWN, SDLK_DOWN);
-
-    if (!pressed_buttons[VITA_PAD_LEFT] && left)
+    }
+    if (!pressed_buttons[VITA_PAD_LEFT] && left) {
         vita_create_and_push_sdlkey_event(SDL_KEYDOWN, SDLK_LEFT);
-    else if (!pressed_buttons[VITA_PAD_RIGHT] && right)
+    } else if (!pressed_buttons[VITA_PAD_RIGHT] && right) {
         vita_create_and_push_sdlkey_event(SDL_KEYDOWN, SDLK_RIGHT);
+    }
 }
 
 void vita_handle_virtual_keyboard(void)
@@ -279,8 +286,9 @@ void vita_start_text_input(char *initial_text, int multiline)
         vita_create_and_push_sdlkey_event(SDL_KEYUP, SDLK_DELETE);
     }
     for (int i=0; i < 599; i++) {
-        if (text[i] == 0)
+        if (text[i] == 0) {
             break;
+        }
         SDL_Event textinput_event;
         textinput_event.type = SDL_TEXTINPUT;
         textinput_event.text.text[0] = text[i];
@@ -299,7 +307,9 @@ void vita_rescale_analog(int *x, int *y, int dead)
     //where a reported maximum axis value corresponds to 80% of the full range
     //of motion of the analog stick
 
-    if (dead == 0) return;
+    if (dead == 0) {
+        return;
+    }
     if (dead >= 32767) {
         *x = 0;
         *y = 0;
@@ -339,12 +349,12 @@ void vita_rescale_analog(int *x, int *y, int dead)
         abs_analog_x = fabs(analog_x);
         abs_analog_y = fabs(analog_y);
         if (abs_analog_x > max_axis || abs_analog_y > max_axis){
-            if (abs_analog_x > abs_analog_y)
+            if (abs_analog_x > abs_analog_y) {
                 clamping_factor = max_axis / abs_analog_x;
-            else
+            } else {
                 clamping_factor = max_axis / abs_analog_y;
+            }
         }
-
         *x = (int) (clamping_factor * analog_x);
         *y = (int) (clamping_factor * analog_y);
     } else {
@@ -360,10 +370,12 @@ void vita_button_to_sdlkey_event(int vita_button, SDL_Event *event, uint32_t eve
     event->key.keysym.mod = 0;
     event->key.repeat = 0;
 
-    if (event_type == SDL_KEYDOWN)
+    if (event_type == SDL_KEYDOWN) {
         pressed_buttons[vita_button] = 1;
-    if (event_type == SDL_KEYUP)
+    }
+    if (event_type == SDL_KEYUP) {
         pressed_buttons[vita_button] = 0;
+    }
 }
 
 void vita_button_to_sdlmouse_event(int vita_button, SDL_Event *event, uint32_t event_type)
