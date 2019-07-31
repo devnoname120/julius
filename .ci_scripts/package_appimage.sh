@@ -13,6 +13,7 @@ wget https://github.com/linuxdeploy/linuxdeploy-plugin-appimage/releases/downloa
 
 chmod +x linuxdeploy*.AppImage
 
+export NO_CLEANUP=1 # Can be removed in the future, currently linuxdeploy has issues cleaning up things
 ./linuxdeploy-centos6-x86_64.AppImage --appimage-extract-and-run --appdir AppDir
 ./linuxdeploy-plugin-appimage-x86_64.AppImage --appimage-extract-and-run --appdir AppDir
 "
