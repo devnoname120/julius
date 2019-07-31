@@ -1,4 +1,7 @@
 language: c
+compiler: gcc
+sudo: require
+dist: xenial # Oldest still-supported LTS right now against which the AppImage is built. Update this to the next LTS when support drops.
 
 matrix:
   # Note: If you add a build here or change the order, you need to update the CI badges in README.md as well!
@@ -40,6 +43,8 @@ install:
   - if [ "$BUILD_TARGET" != "appimage" ];
     then
       ./.ci_scripts/install_sdl.sh;
+    else
+      sudo apt-get -y install libgl1-mesa-dev libsdl2-dev libsdl2-mixer-dev
     fi;
 
 before_script:
@@ -47,6 +52,10 @@ before_script:
 
 script:
   - ./.ci_scripts/run_build.sh
+  - if [ "$BUILD_TARGET" == "appimage" ];
+    then
+      ./.ci_scripts/package_appimage.sh;
+    fi;
 
 after_success:
   - if [ $RUN_CODECOV ];
