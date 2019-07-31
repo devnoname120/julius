@@ -14,7 +14,7 @@ case "$BUILD_TARGET" in
 	cd ..
 	;;
 *)
-	cd build && make && make test
+	cd build && make && make test && make install
 	cd ..
 	;;
 esac
