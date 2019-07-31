@@ -44,7 +44,7 @@ install:
     then
       ./.ci_scripts/install_sdl.sh;
     else
-      sudo apt-get -y install libgl1-mesa-dev libsdl2-dev libsdl2-mixer-dev
+      sudo apt-get -y install libgl1-mesa-dev libsdl2-dev libsdl2-mixer-dev;
     fi;
 
 before_script:
