@@ -6,7 +6,7 @@ case "$BUILD_TARGET" in
     # The idea of AppImage is that you have to build on the oldest distribution that you want to support
 	docker run -d --name appimage --device /dev/fuse:mrw --workdir /build/git -v "${PWD}:/build/git" ubuntu:xenial tail -f /dev/null
 	# This image doesn't have cmake, make, etc.
-	docker exec appimage /bin/bash -c "apt install build-essential cmake"
+	docker exec appimage /bin/bash -c "apt-get -yq update && apt-get -yq install build-essential cmake"
 	;;
 "vita")
 	docker run -d --name vitasdk --workdir /build/git -v "${PWD}:/build/git" gnuton/vitasdk-docker tail -f /dev/null
