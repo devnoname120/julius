@@ -14,7 +14,14 @@ case "$BUILD_TARGET" in
 	cd ..
 	;;
 *)
-	cd build && make && make test && make install
+	cd build && make && make test
+	if [ "$BUILD_TARGET" == "appimage" ];
+	then
+		make DESTDIR=AppDir install;
+	else
+		make install;
+	fi;
+
 	cd ..
 	;;
 esac
