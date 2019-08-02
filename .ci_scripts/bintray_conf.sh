@@ -10,7 +10,7 @@ then
 cat > "bintray.json" <<EOF
 {
   "package": {
-    "subject": "bvschaik",
+    "subject": "devnoname120",
     "repo": "julius",
     "name": "linux-unstable",
     "licenses": ["AGPL-V3"],
