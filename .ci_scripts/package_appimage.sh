@@ -10,3 +10,6 @@ chmod +x linuxdeploy*.AppImage
 
 ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage
 
+pwd
+ls
+ls appimage
