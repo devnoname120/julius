@@ -25,7 +25,7 @@ cat > "bintray.json" <<EOF
 
   "files": [
     {
-      "includePattern": "${build_dir}/Julius(.*)",
+      "includePattern": "${build_dir}/Julius(.*)*",
       "uploadPattern": "julius-$VERSION-linux.AppImage"
     }
   ],
