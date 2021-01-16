@@ -44,12 +44,15 @@ int platform_screen_create(const char *title, int display_scale_percentage)
     if (!my_renderer) {
         my_renderer = SDL_CreateRenderer(my_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     }
-    SDL_Log("Creating empty texture");
-    tex_buffer = vita2d_create_empty_texture_format(
+    SDL_Log("Creating empty ui texture");
+    tex_buffer_ui = vita2d_create_empty_texture_format(
         VITA_DISPLAY_WIDTH, VITA_DISPLAY_HEIGHT, SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1RGB);
-    SDL_Log("Creating empty texture: done");
+    SDL_Log("Creating empty city texture");
+    tex_buffer_city = vita2d_create_empty_texture_format(
+        VITA_DISPLAY_WIDTH, VITA_DISPLAY_HEIGHT, SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1RGB);
+    SDL_Log("Creating empty textures: done");
 
-    return platform_screen_resize(VITA_DISPLAY_WIDTH, VITA_DISPLAY_HEIGHT);
+    return platform_screen_resize(VITA_DISPLAY_WIDTH, VITA_DISPLAY_HEIGHT, 0);
 }
 
 void platform_screen_destroy(void)
@@ -62,7 +65,7 @@ void platform_screen_destroy(void)
     }
 }
 
-int platform_screen_resize(int width, int height)
+int platform_screen_resize(int width, int height, int save)
 {
     screen_set_resolution(width, height);
     return 1;
