@@ -815,6 +815,7 @@ if (VITA_BUILD)
         ScePower_stub
         ScePgf_stub
         SceAppMgr_stub
+        SceMotion_stub
     )
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__vita__")
     # this setting enables larger heap memory sizes on Vita, up to ~330 MB
